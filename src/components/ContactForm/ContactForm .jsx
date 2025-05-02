@@ -9,7 +9,6 @@ const ContactForm = ({ addContact }) => {
   const handlesubmit = (values, actions) => {
     const newContact = {
       ...values,
-      id: nanoid(),
     };
     addContact(newContact);
     actions.resetForm();

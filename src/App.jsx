@@ -1,43 +1,45 @@
 import ContactForm from './components/ContactForm/ContactForm ';
 import SearchBox from './components/SearchBox/SearchBox';
 import ContactList from './components/ContactList/ContactList';
-import { useState, useEffect } from 'react';
-import initialContacts from '../src/assets/initialContacts.json';
+import { useDispatch, useSelector } from 'react-redux';
+import { nanoid } from '@reduxjs/toolkit';
+import { addContact, deleteContact } from './redux/contactsSlice';
+import { changeFilter } from './redux/filtersSlice';
+import { number } from 'yup';
+
 const App = () => {
-  const [contacts, setcontacts] = useState(() => {
-    const SavedState = window.localStorage.getItem('contactsState');
-    return SavedState !== null ? JSON.parse(SavedState) : initialContacts;
-  });
-  const [filter, setFilter] = useState('');
+  const contacts = useSelector(state => state.contactList.contacts);
+  const filter = useSelector(state => state.filter.filter);
+  const dispatch = useDispatch();
 
-  useEffect(() => {
-    window.localStorage.setItem('contactsState', JSON.stringify(contacts));
-  }, [contacts]);
-
+  const HandleaddContact = data => {
+    const newcontact = {
+      id: nanoid(),
+      name: data.name,
+      number: data.number,
+    };
+    dispatch(addContact(newcontact));
+  };
   const handleChangeImput = e => {
-    setFilter(e.target.value);
+    dispatch(changeFilter(e.target.value));
   };
   const filteredContacts = contacts.filter(contact =>
     contact.name.toLowerCase().includes(filter.toLowerCase())
   );
-  const addContact = newContact => {
-    setcontacts(prevContacts => {
-      return [...prevContacts, newContact];
-    });
-  };
 
-  const deleteContact = contactId => {
-    setcontacts(prevContacts => {
-      return prevContacts.filter(contact => contact.id !== contactId);
-    });
+  const HandledeleteContact = id => {
+    dispatch(deleteContact(id));
   };
 
   return (
     <div>
       <h1>Phonebook</h1>
-      <ContactForm addContact={addContact} />
+      <ContactForm addContact={HandleaddContact} />
       <SearchBox onChange={handleChangeImput} inpValue={filter} />
-      <ContactList contactList={filteredContacts} onDelete={deleteContact} />
+      <ContactList
+        contactList={filteredContacts}
+        onDelete={HandledeleteContact}
+      />
     </div>
   );
 };
